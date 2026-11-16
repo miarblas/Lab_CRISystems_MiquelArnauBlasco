@@ -1,28 +1,38 @@
-# Follow Line — Unibotics | P, PD, PI, PID
+# Laboratorio de Control y Robótica
 
-Archivos **independientes** para copiar y pegar en el editor de Unibotics. La segmentación HSV, región de interés, centroide, reacción a pérdida de línea y velocidad fija `V=10` se mantienen iguales en los cuatro controladores.
+Este repositorio reúne las prácticas y pequeños proyectos que voy desarrollando en el laboratorio. La idea es tener el código, las pruebas y las notas en un mismo sitio, tanto para seguir la evolución de cada ejercicio como para poder volver a consultarlo más adelante.
 
-## Orden de trabajo
+No todos los proyectos tendrán la misma estructura: iré organizando cada uno según lo que necesite.
 
-1. `01_P/P.py` — P de referencia. Probar `KP=0.006, 0.008, 0.010` (el valor 0.004 falló en una primera curva con el equipo anterior).
-2. `02_PD/PD.py` — probar `KD=0.0005` y `KD=0.001` con `KP=0.010`.
-3. `03_PI/PI.py` — probar `KI=0.00005` inicialmente, y modificar con prudencia. Si la integral empeora la conducción, registrarlo.
-4. `04_PID/PID.py` — empezar con `KP=0.010`, `KI=0.00005`, `KD=0.0005` y reajustar si hace falta.
-5. `05_velocidad_adaptativa/PD_adaptativo.py` — **segunda fase**, con PD de base. `V_MIN=8`, `V_MAX=15` son valores de prueba, NO velocidades seguras o verificadas.
+## Proyectos
 
-## Variables y límites
+### Follow Line — Unibotics
 
-- Los términos I y D están escalados por `dt` (reloj real de Python), por lo que sus ganancias NO son directamente equivalentes a implementaciones por fotograma. Su resultado puede variar con la carga computacional.
-- `DT_MAX=0.20` rechaza intervalos anormalmente largos; la medida de tiempo de simulación sería mejor si la plataforma la expusiese.
-- Integral limitada y reiniciada al perder la línea. Derivada filtrada con `ALPHA_D=0.25`.
-- MAE y RMSE son **errores de posición de la línea en píxeles**, no distancia física. En consola se imprimen valores **acumulados desde el inicio de la ejecución** (no por vuelta). El conteo `perdidas` significa transiciones de detectado a no detectado, incluyendo una pérdida inicial si sucede.
-- Para comparar con rigor: misma escena, condiciones iniciales, parámetros de visión y tres vueltas por configuración. Si reinicias código entre vueltas, reinicias también los contadores.
-- Los tiempos de la web pueden variar por GPU; la prueba en laboratorio puede reducir esa variabilidad, pero no garantizar eliminarla.
+El primer ejercicio consiste en hacer que un vehículo simulado siga una línea roja utilizando la imagen de su cámara. A partir de una detección sencilla con OpenCV, he probado distintas estrategias de control de dirección:
 
-## ¿Qué hace el modo adaptativo?
+- **P:** punto de partida para estudiar cómo afecta la ganancia proporcional.
+- **PD:** incorporación de la derivada para reducir las oscilaciones.
+- **PI:** pruebas con el término integral y análisis de sus efectos.
+- **PID:** combinación de los tres términos y comparación con PD.
+- **Velocidad adaptativa:** ajustes de velocidad según el error visual y la forma aparente de la línea.
 
-La velocidad se reduce cuando aumenta el error lateral y/o el desplazamiento horizontal de la línea entre una banda cercana y otra más lejana. **Esto no mide la curvatura real**, pero puede servir como indicio de giro próximo. No usar sus resultados para atribuir diferencias exclusivamente al PD.
+En cada caso he registrado varias vueltas y he comparado el error medio absoluto (MAE), el error cuadrático medio (RMSE), las pérdidas de detección y el tiempo mostrado por el simulador.
 
-## Resultados
+**Resultado principal:** en las configuraciones ensayadas, PD consigue una mejora importante respecto a P. PID obtiene errores ligeramente menores, pero la diferencia es pequeña. Aumentar la velocidad permite completar el circuito en menos tiempo mostrado por la web, aunque empeora la precisión del seguimiento.
 
-Utilizar `resultados/registro.csv` y `docs/Notas_experimentos.md` para documentar tiempos y observaciones.
+Los tiempos se interpretan con cautela porque pueden verse afectados por el rendimiento gráfico del equipo. El MAE y el RMSE corresponden al error en la imagen, no a la distancia física a la línea.
+
+**Dónde encontrarlo:**
+
+| Carpeta | Contenido |
+| --- | --- |
+| [`01_P/`](01_P/) | Control proporcional |
+| [`02_PD/`](02_PD/) | Control PD y variantes adaptativas |
+| [`03_PI/`](03_PI/) | Control PI |
+| [`04_PID/`](04_PID/) | Control PID |
+| [`05_velocidad_adaptativa/`](05_velocidad_adaptativa/) | Comparación de estrategias de velocidad |
+| [`06_resultados/`](06_resultados/) | Registro de pruebas, tablas y gráficas |
+| [`docs/`](docs/) | Notas del proyecto en Markdown / Obsidian |
+
+La documentación empieza en **[Índice de Follow Line](docs/00%20-%20%C3%8Dndice.md)**. Para consultar los datos originales, se puede abrir [`registro.csv`](06_resultados/registro.csv).
+
